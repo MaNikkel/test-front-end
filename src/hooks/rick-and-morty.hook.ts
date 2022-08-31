@@ -15,7 +15,7 @@ export const useRickAndMorty = () => {
   const { name, setName } = useContext(RickAndMortyContext)
   const debouncedName = useDebounce(name)
   
-  const { data, fetchNextPage, hasNextPage } = useInfiniteQuery(
+  const { data, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
     ['characters', debouncedName], 
     ({ pageParam }) => fetchAllCharacters(pageParam, debouncedName),
     {
@@ -26,7 +26,10 @@ export const useRickAndMorty = () => {
 
 
   return {
-    data, fetchNextPage, hasNextPage,
+    data, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetching,
     setName,
     name
   }

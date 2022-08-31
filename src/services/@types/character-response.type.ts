@@ -10,7 +10,9 @@ export type CharacterResult = {
   species: string,
   image: string,
   episode: string[],
-  url: string
+  url: string,
+  type: string,
+  gender: string,
 }
 
 export type GetCharactersResponse = {

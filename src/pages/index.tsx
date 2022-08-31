@@ -1,11 +1,14 @@
 import { dehydrate, QueryClient } from '@tanstack/react-query'
 import type { GetStaticProps, NextPage } from 'next'
 import { useInView } from 'react-intersection-observer'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useRickAndMorty } from '../hooks/rick-and-morty.hook'
 import { fetchAllCharacters } from '../services/rick-and-morty.service'
-import { Input } from '../components/atoms/Input'
 import { Header } from '../components/molecules/Header'
+import { Character } from '../components/molecules/Charachter'
+import { SimpleGrid } from '@chakra-ui/react'
+import CharacterModal, { CharacterModalHandlers } from '../components/molecules/CharacterModal'
+import { CharacterResult } from '../services/@types/character-response.type'
 
 export const getStaticProps: GetStaticProps = async () => {
   const queryClient = new QueryClient()
@@ -20,29 +23,41 @@ export const getStaticProps: GetStaticProps = async () => {
 }
 
 const Home: NextPage = () => {
-  const { data, fetchNextPage, hasNextPage, name, setName } = useRickAndMorty()
+  const { data, fetchNextPage, hasNextPage, isFetching } = useRickAndMorty()
   const { ref, inView } = useInView()
+  const characterModalRef = useRef<CharacterModalHandlers>() as React.MutableRefObject<CharacterModalHandlers>
 
   useEffect(() => {
     if (inView && hasNextPage) {
       fetchNextPage()
     }
-  }, [inView, hasNextPage])
+  }, [inView, hasNextPage, fetchNextPage])
+
+  function onOpen(character: CharacterResult) {
+    characterModalRef.current.openModalWithCharacter(character)
+  }
 
   return (
     <>
       <Header />
       { data?.pages?.map((page) => (
-        <React.Fragment key={page?.info?.next}>
+        <SimpleGrid 
+          columns={[null, 1, 2, null, 3, 4]} 
+          spacing={0}
+          justifyItems='center'
+          key={page?.info?.next}
+        >
           { page?.results?.map(result => {
-            return <div key={result.id}><h1>{result.name}</h1></div>
+            return <Character character={result} key={result.id} onClick={() => onOpen(result)}/>
           }) }
-        </React.Fragment>
+        </SimpleGrid>
       )) }
 
-      <button ref={ref}>
-          Alo
-      </button>
+      <div ref={ref}>
+          { isFetching && 'Carregando...' }
+      </div>
+
+      <CharacterModal ref={characterModalRef}/>
     </>
   )
 }
